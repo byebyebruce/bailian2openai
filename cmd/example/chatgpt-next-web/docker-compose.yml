@@ -1,0 +1,34 @@
+version: '3.0'
+services:
+  # bailian2openai
+  bailian2openai:
+    container_name: bailian2openai
+    image: bailu1901/bailian2openai:latest
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Shanghai
+      - ACCESS_KEY_ID=
+      - ACCESS_KEY_SECRET=
+      - AGENT_KEY=
+      - APP_ID=
+      #ports:
+      #- '8080:8080'
+    networks:
+      - bailian-chatgpt
+  # chat web
+  chatgpt-next-web:
+    container_name: chatgpt-next-web
+    image: yidadaa/chatgpt-next-web
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Shanghai
+      - BASE_URL=http://bailian2openai:8080
+      #  OPENAI_API_KEY 随便填写一个
+      - OPENAI_API_KEY=sk-xxx
+      #- CODE=yourpassword#
+    ports:
+      - '3000:3000'
+    networks:
+      - bailian-chatgpt
+networks:
+  bailian-chatgpt:
