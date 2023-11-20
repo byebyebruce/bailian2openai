@@ -36,8 +36,8 @@ docker run -it --rm -p 8080:8080 \
 ```
 
 ## Example
-- [api-server](./cmd/example/api-server)
-- [chatgpt-next-web](./cmd/example/chatgpt-next-web)
+- [api-server](example/api-server)
+- [chatgpt-next-web](example/chatgpt-next-web)
 
 ## Build
 `make build`
