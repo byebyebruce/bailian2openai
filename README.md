@@ -3,7 +3,7 @@
  
 ## 目的 
 本服务可以方便的将Aliyun的[百炼大模型平台](https://bailian.console.aliyun.com/)的App接口转成OpenAI API接口  
-这样可以方便接入以OpenAI API为标准接的海量应用和框架(如[langchain](https://github.com/langchain-ai/langchain)、[chatgpt-next-web](https://github.com/Yidadaa/ChatGPT-Next-Web))
+这样可以方便接入以OpenAI API为标准接口的海量应用和框架(如[langchain](https://github.com/langchain-ai/langchain)、[chatgpt-next-web](https://github.com/Yidadaa/ChatGPT-Next-Web))
 
 
 ## Prepare
