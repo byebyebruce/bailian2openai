@@ -2,8 +2,8 @@
 > [BaiLian](https://bailian.console.aliyun.com/) API to OpenAI API
  
 ## 目的 
-目前能免费申请到Aliyun的[百炼大模型平台](https://bailian.console.aliyun.com/)服务，但已经无数开源应用都是基于OpenAI API为标准开发的   
-用这个服务，可以方便接入其他以OpenAI API为标准的项目。
+本服务可以方便的将Aliyun的[百炼大模型平台](https://bailian.console.aliyun.com/)的App接口转成OpenAI API接口  
+这样可以方便接入以OpenAI API为标准接的海量应用和框架(如[langchain](https://github.com/langchain-ai/langchain)、[chatgpt-next-web](https://github.com/Yidadaa/ChatGPT-Next-Web))
 
 
 ## Prepare
