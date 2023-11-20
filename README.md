@@ -20,9 +20,9 @@ Get `Access Key、Access Secret Key、Agent Key、AppId` from [BaiLian](https://
 1. Build
 ```bash
 docker build \
--t image:latest \
---build-arg VERSION=$(git describe --tags --always) \
-.
+   -t image:latest \
+   --build-arg VERSION=$(git describe --tags --always) \
+   .
 ```
 
 2. Run
