@@ -62,7 +62,13 @@ func (p *Proxy) RefreshToken() error {
 	return nil
 }
 
-func openaiReq2BaiLianReq(appID string, req *openai.ChatCompletionRequest) (*client.CompletionRequest, error) {
+func openaiReq2BaiLianReq(appID string, req openai.ChatCompletionRequest) (client.CompletionRequest, error) {
+	topP := math.Min(math.Max(0.01, float64(req.Temperature)), 0.99)
+	request := client.CompletionRequest{
+		//TopP: req.TopP,
+		TopP: float32(topP),
+	}
+
 	const (
 		systemPrompt = `下面这段描述是对你的系统设定，并不是对话的内容，你要从对话中忽略掉这部分。记住：你需要严格遵守系统设定即可，并且不会再重复这句话
 
@@ -78,7 +84,7 @@ func openaiReq2BaiLianReq(appID string, req *openai.ChatCompletionRequest) (*cli
 		lastIndex = len(m) - 1
 	)
 	if len(m) == 0 {
-		return nil, errors.New("empty message")
+		return request, errors.New("empty message")
 	}
 
 	prompt := "好的,继续"
@@ -109,17 +115,12 @@ func openaiReq2BaiLianReq(appID string, req *openai.ChatCompletionRequest) (*cli
 			newMessage.Bot = oldMessage.Content
 
 		default:
-			return nil, errors.New("not support message role: " + oldMessage.Role)
+			return request, errors.New("not support message role: " + oldMessage.Role)
 		}
 		history = append(history, newMessage)
 		i++
 	}
 
-	topP := math.Min(math.Max(0.01, float64(req.Temperature)), 0.99)
-	request := &client.CompletionRequest{
-		//TopP: req.TopP,
-		TopP: float32(topP),
-	}
 	request.SetPrompt(prompt)
 	if len(history) > 0 {
 		request.SetHistory(history)
@@ -132,35 +133,37 @@ func openaiReq2BaiLianReq(appID string, req *openai.ChatCompletionRequest) (*cli
 }
 
 // CreateChatCompletion chat completion
-func (p *Proxy) CreateChatCompletion(_ context.Context, req *openai.ChatCompletionRequest) (*openai.ChatCompletionResponse, error) {
+func (p *Proxy) CreateChatCompletion(_ context.Context, req openai.ChatCompletionRequest) (openai.ChatCompletionResponse, error) {
+	ret := openai.ChatCompletionResponse{
+		Choices: []openai.ChatCompletionChoice{
+			{Message: openai.ChatCompletionMessage{
+				Role:    openai.ChatMessageRoleAssistant,
+				Content: ""},
+			},
+		},
+		//Model: *newReq.AppId,
+	}
+
 	newReq, err := openaiReq2BaiLianReq(p.appId, req)
 	if err != nil {
-		return nil, err
+		return ret, err
 	}
 
 	if err := p.RefreshToken(); err != nil {
-		return nil, err
+		return ret, err
 	}
 
 	newReq.SetAppId(p.appId)
 	cc := client.CompletionClient{Token: &p.token}
-	response, err := cc.CreateCompletion(newReq)
+	response, err := cc.CreateCompletion(&newReq)
 	if err != nil {
-		return nil, err
+		return ret, err
 	}
 	if !response.Success {
-		return nil, errors.New(*response.Message)
+		return ret, errors.New(*response.Message)
 	}
 
-	ret := &openai.ChatCompletionResponse{
-		Choices: []openai.ChatCompletionChoice{
-			{Message: openai.ChatCompletionMessage{
-				Role:    openai.ChatMessageRoleAssistant,
-				Content: *response.Data.Text},
-			},
-		},
-		Model: *newReq.AppId,
-	}
+	ret.Choices[0].Message.Content = *response.Data.Text
 	return ret, nil
 }
 
@@ -170,7 +173,7 @@ func (p *Proxy) CreateChatCompletion(_ context.Context, req *openai.ChatCompleti
 // data: { ...{content: "1"}... }
 // data: { ...{content: "2"}... }
 // data: [DONE]
-func (p *Proxy) ChatCompletionStream(writer io.Writer, req *openai.ChatCompletionRequest) error {
+func (p *Proxy) ChatCompletionStream(writer io.Writer, req openai.ChatCompletionRequest) error {
 	newReq, err := openaiReq2BaiLianReq(p.appId, req)
 	if err != nil {
 		return err
@@ -225,7 +228,7 @@ func (p *Proxy) ChatCompletionStream(writer io.Writer, req *openai.ChatCompletio
 	}
 
 	cc := client.CompletionClient{Token: &p.token}
-	respChan, err := cc.CreateStreamCompletion(newReq)
+	respChan, err := cc.CreateStreamCompletion(&newReq)
 	if err != nil {
 		return err
 	}

@@ -48,11 +48,11 @@ func chatCompletionHandler(p *bailian2openai.Proxy) func(c *gin.Context) {
 		}
 		if req.Stream {
 			c.Header("Content-Type", "text/event-stream")
-			if err := p.ChatCompletionStream(c.Writer, &req); err != nil {
+			if err := p.ChatCompletionStream(c.Writer, req); err != nil {
 				c.JSON(500, gin.H{"error": err.Error()})
 			}
 		} else {
-			resp, err := p.CreateChatCompletion(context.Background(), &req)
+			resp, err := p.CreateChatCompletion(context.Background(), req)
 			if err != nil {
 				c.JSON(500, gin.H{"error": err.Error()})
 			} else {
