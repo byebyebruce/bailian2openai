@@ -2,6 +2,7 @@ package bailian2openai
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -131,7 +132,7 @@ func openaiReq2BaiLianReq(appID string, req *openai.ChatCompletionRequest) (*cli
 }
 
 // CreateChatCompletion chat completion
-func (p *Proxy) CreateChatCompletion(req *openai.ChatCompletionRequest) (*openai.ChatCompletionResponse, error) {
+func (p *Proxy) CreateChatCompletion(_ context.Context, req *openai.ChatCompletionRequest) (*openai.ChatCompletionResponse, error) {
 	newReq, err := openaiReq2BaiLianReq(p.appId, req)
 	if err != nil {
 		return nil, err
