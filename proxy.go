@@ -130,8 +130,8 @@ func openaiReq2BaiLianReq(appID string, req *openai.ChatCompletionRequest) (*cli
 	return request, nil
 }
 
-// ChatCompletion chat completion
-func (p *Proxy) ChatCompletion(req *openai.ChatCompletionRequest) (*openai.ChatCompletionResponse, error) {
+// CreateChatCompletion chat completion
+func (p *Proxy) CreateChatCompletion(req *openai.ChatCompletionRequest) (*openai.ChatCompletionResponse, error) {
 	newReq, err := openaiReq2BaiLianReq(p.appId, req)
 	if err != nil {
 		return nil, err

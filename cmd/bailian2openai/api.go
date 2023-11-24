@@ -51,7 +51,7 @@ func chatCompletionHandler(p *bailian2openai.Proxy) func(c *gin.Context) {
 				c.JSON(500, gin.H{"error": err.Error()})
 			}
 		} else {
-			resp, err := p.ChatCompletion(&req)
+			resp, err := p.CreateChatCompletion(&req)
 			if err != nil {
 				c.JSON(500, gin.H{"error": err.Error()})
 			} else {

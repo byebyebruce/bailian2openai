@@ -34,7 +34,7 @@ func CLI(p *bailian2openai.Proxy, systemPrompt string) {
 
 		m := openai.ChatCompletionMessage{Role: openai.ChatMessageRoleUser, Content: q}
 
-		resp, err := p.ChatCompletion(&openai.ChatCompletionRequest{
+		resp, err := p.CreateChatCompletion(&openai.ChatCompletionRequest{
 			Messages: append(messages, m),
 		})
 		if err != nil {
