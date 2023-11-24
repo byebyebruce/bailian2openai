@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -34,7 +35,7 @@ func CLI(p *bailian2openai.Proxy, systemPrompt string) {
 
 		m := openai.ChatCompletionMessage{Role: openai.ChatMessageRoleUser, Content: q}
 
-		resp, err := p.CreateChatCompletion(&openai.ChatCompletionRequest{
+		resp, err := p.CreateChatCompletion(context.Background(), &openai.ChatCompletionRequest{
 			Messages: append(messages, m),
 		})
 		if err != nil {
