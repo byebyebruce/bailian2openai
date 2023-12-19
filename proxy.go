@@ -268,3 +268,147 @@ func (p *Proxy) ChatCompletionStream(writer io.Writer, req openai.ChatCompletion
 	writeData(doneFlag)
 	return nil
 }
+
+func openaiReq2BaiLianCompletionReq(appID string, req openai.CompletionRequest) (client.CompletionRequest, error) {
+	topP := math.Min(math.Max(0.01, float64(req.Temperature)), 0.99)
+	request := client.CompletionRequest{
+		//TopP: req.TopP,
+		TopP: float32(topP),
+	}
+	request.SetPrompt(req.Prompt.(string))
+
+	request.SetAppId(appID)
+	if len(appID) == 0 && len(req.Model) > 0 {
+		request.SetAppId(req.Model)
+	}
+	return request, nil
+}
+
+// CompletionStream chat completion stream
+// https://beta.openai.com/docs/api-reference/completions/create-stream
+// data: { ...{role: "assistant"}... }
+// data: { ...{content: "1"}... }
+// data: { ...{content: "2"}... }
+// data: [DONE]
+func (p *Proxy) CompletionStream(writer io.Writer, req openai.CompletionRequest) error {
+	newReq, err := openaiReq2BaiLianCompletionReq(p.appId, req)
+	if err != nil {
+		return err
+	}
+
+	w := bufio.NewWriter(writer)
+	defer w.Flush()
+
+	const (
+		dataPrefix = `data: `
+		doneFlag   = `[DONE]`
+	)
+	writeData := func(data interface{}) error {
+		var (
+			buf []byte
+			err error
+		)
+		switch v := data.(type) {
+		case string:
+			buf = []byte(v)
+		case []byte:
+			buf = v
+		case openai.CompletionResponse:
+			buf, err = json.Marshal(v)
+			if err != nil {
+				return err
+			}
+		default:
+			return errors.New("unknown data type")
+		}
+
+		defer w.Flush()
+
+		_, err = w.WriteString(dataPrefix)
+		if err != nil {
+			return err
+		}
+		_, err = w.Write(buf)
+		if err != nil {
+			return err
+		}
+		_, err = w.WriteString("\n\n")
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
+
+	if err := p.RefreshToken(); err != nil {
+		return err
+	}
+
+	cc := client.CompletionClient{Token: &p.token}
+	respChan, err := cc.CreateStreamCompletion(&newReq)
+	if err != nil {
+		return err
+	}
+
+	sp := openai.CompletionResponse{
+		Choices: []openai.CompletionChoice{
+			{
+				Index: 0,
+				Text:  "",
+			},
+		},
+		Model: *newReq.AppId,
+	}
+	if err := writeData(sp); err != nil {
+		return err
+	}
+
+	content := ""
+	for resp := range respChan {
+		if !resp.Success {
+			sp.Choices[0].FinishReason = "error"
+			sp.Choices[0].Text = *resp.Message
+			writeData(sp)
+			break
+		}
+		if resp.Data.Text != nil {
+			delta := strings.TrimPrefix(*resp.Data.Text, content)
+			content = *resp.Data.Text
+			sp.Choices[0].Text = delta
+			writeData(sp)
+		}
+	}
+
+	writeData(doneFlag)
+	return nil
+}
+
+// CreateCompletion completion
+func (p *Proxy) CreateCompletion(_ context.Context, req openai.CompletionRequest) (openai.CompletionResponse, error) {
+	ret := openai.CompletionResponse{
+		Choices: []openai.CompletionChoice{},
+		//Model: *newReq.AppId,
+	}
+
+	newReq, err := openaiReq2BaiLianCompletionReq(p.appId, req)
+	if err != nil {
+		return ret, err
+	}
+
+	if err := p.RefreshToken(); err != nil {
+		return ret, err
+	}
+
+	newReq.SetAppId(p.appId)
+	cc := client.CompletionClient{Token: &p.token}
+	response, err := cc.CreateCompletion(&newReq)
+	if err != nil {
+		return ret, err
+	}
+	if !response.Success {
+		return ret, errors.New(*response.Message)
+	}
+
+	ret.Choices[0].Text = *response.Data.Text
+	return ret, nil
+}
