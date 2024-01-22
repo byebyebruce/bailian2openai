@@ -153,7 +153,6 @@ func (p *Proxy) CreateChatCompletion(_ context.Context, req openai.ChatCompletio
 		return ret, err
 	}
 
-	newReq.SetAppId(p.appId)
 	cc := client.CompletionClient{Token: &p.token}
 	response, err := cc.CreateCompletion(&newReq)
 	if err != nil {
@@ -386,7 +385,11 @@ func (p *Proxy) CompletionStream(writer io.Writer, req openai.CompletionRequest)
 // CreateCompletion completion
 func (p *Proxy) CreateCompletion(_ context.Context, req openai.CompletionRequest) (openai.CompletionResponse, error) {
 	ret := openai.CompletionResponse{
-		Choices: []openai.CompletionChoice{},
+		Choices: []openai.CompletionChoice{
+			{
+				Text: "",
+			},
+		},
 		//Model: *newReq.AppId,
 	}
 
@@ -399,7 +402,6 @@ func (p *Proxy) CreateCompletion(_ context.Context, req openai.CompletionRequest
 		return ret, err
 	}
 
-	newReq.SetAppId(p.appId)
 	cc := client.CompletionClient{Token: &p.token}
 	response, err := cc.CreateCompletion(&newReq)
 	if err != nil {
