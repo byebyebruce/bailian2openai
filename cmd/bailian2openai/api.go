@@ -9,8 +9,8 @@ import (
 	"github.com/sashabaranov/go-openai"
 )
 
-// 可用模型列表
-var availableModels = []string{"gpt-3.5-turbo", "text-davinci-003", "code-davinci-002"}
+// 指定部分可用模型列表
+// var availableModels = []string{"gpt-3.5-turbo", "text-davinci-003", "code-davinci-002"}
 
 // RunAPIServer run http api server
 // func RunAPIServer(p *bailian2openai.Proxy, addr string) error {
@@ -57,6 +57,7 @@ func RunAPIServer(p *bailian2openai.Proxy, addr string) error {
 // modelsHandler 处理 /models 路由
 func modelsHandler() func(c *gin.Context) {
 	return func(c *gin.Context) {
+		//这一部分适用于 12行的指定部分可用模型列表
 		// data := make([]gin.H, len(availableModels))
 		// for i, model := range availableModels {
 		// 	data[i] = gin.H{
@@ -66,7 +67,7 @@ func modelsHandler() func(c *gin.Context) {
 		// 		"owned_by": "system",
 		// 	}
 		// }
-
+		//下面的话就是阿里百炼的模型列表
 		c.JSON(http.StatusOK, gin.H{
 			"object": "list",
 			"data": []gin.H{
