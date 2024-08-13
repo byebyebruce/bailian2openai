@@ -4,7 +4,7 @@
 ## 目的 
 本服务可以方便的将Aliyun的[百炼大模型平台](https://bailian.console.aliyun.com/)的App接口转成OpenAI API接口  
 这样可以方便接入以OpenAI API为标准接口的海量应用和框架(如[langchain](https://github.com/langchain-ai/langchain)、[chatgpt-next-web](https://github.com/Yidadaa/ChatGPT-Next-Web))
-
+这个项目可以结合 https://github.com/duoyang666/ai_novel项目中的 魔改版 OpenWebUi ，OpenWebUi提供前端页面支持， 魔改版 OpenWebUi 会请求/models 返回模型列表，所以需要加一个列表，这样应用可以调用不同模型
 
 ## Prepare
 Get `Access Key、Access Secret Key、Agent Key、AppId` from [BaiLian](https://help.aliyun.com/document_detail/2587494.html)
